@@ -24,6 +24,7 @@ import {
 import { EditPermissionsModal } from './modals/editPermissionModal'
 import { EditStatusModal } from './modals/editAccountStatus'
 import { getSuspensionEndDate } from '@/lib/helpers'
+import DropdownActions from '@/components/dropdownActions'
 
 interface StaffStats {
   total: number
@@ -43,6 +44,12 @@ const page = () => {
   const [statsStaff, setStatsStaff] = useState<StaffStats>({ total: 0, active: 0, inactive: 0, onLeave: 0, suspended: 0 })
   const [loading, setLoading] = useState(false)
   const headers: string[] = ['Name', 'Employee ID', 'Department', 'Role', 'Status', 'Actions']
+
+  const actionItems = [
+    { label: 'View Details', icon: <Eye className="h-4 w-4" />, onClick: (data: any) => goToStaffDetails(data.id) },
+    { label: 'Edit Permissions', icon: <UserCog className="h-4 w-4" />, onClick: (data: any) => setPermissionsModal({ open: true, staff: data }) },
+    { label: 'Edit Status', icon: <Shield className="h-4 w-4" />, onClick: (data: any) => setStatusModal({ open: true, staff: data }) },
+  ]
 
   const fetchStaffs = async () => {
     try {
@@ -116,29 +123,7 @@ const page = () => {
               </div>
             </TableCell>
             <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <EllipsisVertical />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => goToStaffDetails(member.id)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setPermissionsModal({ open: true, staff: member })}>
-                    <Shield className="mr-2 h-4 w-4" />
-                    Permissions
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusModal({ open: true, staff: member })}>
-                    <UserCog className="mr-2 h-4 w-4" />
-                    Account Status
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <DropdownActions actionItems={actionItems} data={member} />
             </TableCell>
           </TableRow>
         ))}

@@ -3,12 +3,16 @@ import TitlePage from '@/components/titlePage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, EllipsisVertical, Search, X } from 'lucide-react'
+import { Plus, EllipsisVertical, Search, X, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
 import { formatDate } from '@/lib/helpers'
 import { CATEGORIES, AUDIENCE } from '@/lib/constants/others'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import DropdownActions from '@/components/dropdownActions'
+import DeleteConfirmation from '@/components/deleteConfirmation'
+import { showToast } from '@/lib/utils'
 
 const STATUS_OPTIONS = [
     { value: 'published', label: 'Published' },
@@ -26,6 +30,10 @@ const page = () => {
     const [category, setCategory] = useState('all')
     const [target, setTarget] = useState('all')
     const [visibility, setVisibility] = useState('all')
+    const [deleteModal, setDeleteModal] = useState({
+        open: false,
+        announcement: null
+    })
 
     const fetchAnnouncements = async (filters?: {
         search?: string
@@ -81,6 +89,37 @@ const page = () => {
 
     const headers = ['Title', 'Category', 'Status', 'Visibility', 'Target', 'Created At', 'Actions']
 
+    const actionItems = [
+        {
+            icon: <Eye />,
+            label: 'View Details',
+            onClick: (data: any) => {
+                goToAnnouncementDetail(data.id)
+            }
+        },
+        {
+            icon: <Edit />,
+            label: 'Edit',
+            onClick: (data: any) => {
+                goToAnnouncementDetail(data.id)
+            }
+        },
+        {
+            icon: <Trash2 />,
+            label: 'Delete',
+            onClick: (data: any) => {
+                setDeleteModal({
+                    open: true,
+                    announcement: data
+                })
+            }
+        }
+    ]
+
+    const goToAnnouncementDetail = (id: string) => {
+        router.push(`/dashboard/announcement/${id}`)
+    }
+
     const renderTableData = () => {
         if (loading) return (
             <TableBody>
@@ -110,8 +149,8 @@ const page = () => {
                         <TableCell>{CATEGORIES.find((c) => c.value === announcement.category)?.label ?? '—'}</TableCell>
                         <TableCell>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${announcement.status === 'published'
-                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                    : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                ? 'bg-green-50 text-green-700 border-green-200'
+                                : 'bg-yellow-50 text-yellow-700 border-yellow-200'
                                 }`}>
                                 {announcement.status === 'published' ? 'Published' : 'Draft'}
                             </span>
@@ -124,9 +163,7 @@ const page = () => {
                         <TableCell>{AUDIENCE.find((a) => a.value === announcement.target_audience)?.label ?? '—'}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">{formatDate(announcement.published_at)}</TableCell>
                         <TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/announcement/${announcement.id}`)}>
-                                <EllipsisVertical />
-                            </Button>
+                            <DropdownActions actionItems={actionItems} data={announcement} />
                         </TableCell>
                     </TableRow>
                 ))}
@@ -191,16 +228,16 @@ const page = () => {
                     </Select>
 
                     {/* Target */}
-                   <select
-  value={target}
-  onChange={(e) => setTarget(e.target.value)}
-  className="h-9 px-3 rounded-md border border-input bg-background text-sm text-foreground cursor-pointer outline-none focus:border-ring transition-colors"
->
-  <option value="all">All Audiences</option>
-  {AUDIENCE.map((a) => (
-    <option key={a.value} value={a.value}>{a.label}</option>
-  ))}
-</select>
+                    <select
+                        value={target}
+                        onChange={(e) => setTarget(e.target.value)}
+                        className="h-9 px-3 rounded-md border border-input bg-background text-sm text-foreground cursor-pointer outline-none focus:border-ring transition-colors"
+                    >
+                        <option value="all">All Audiences</option>
+                        {AUDIENCE.map((a) => (
+                            <option key={a.value} value={a.value}>{a.label}</option>
+                        ))}
+                    </select>
 
                     {/* Visibility */}
                     <Select value={visibility} onValueChange={setVisibility}>
@@ -239,6 +276,28 @@ const page = () => {
                     {renderTableData()}
                 </Table>
             </div>
+        (
+                <DeleteConfirmation
+                    open={deleteModal.open}
+                    onClose={() => setDeleteModal({ ...deleteModal, open: false })}
+                    onConfirm={async (data) => {
+                            const response = await fetch('/api/announcement/delete/', {
+                                method: 'DELETE',
+                                body: JSON.stringify({ id: data.id })
+                            })
+                            const result = await response.json()
+                            if(result.success) {
+                                fetchAnnouncements()
+                                setDeleteModal({ ...deleteModal, open: false })
+                                showToast.success(result.message)
+                            } else {
+                                showToast.error(result.message)
+                            }
+                      
+                    }}
+                    data={deleteModal.announcement}
+                />
+
         </div>
     )
 }
