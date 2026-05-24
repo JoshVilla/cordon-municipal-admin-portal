@@ -38,6 +38,7 @@ const defaultForm = {
   is4PsBeneficiary: false,
   voterStatus: "Registered",
   status: "Active",
+  isVerified: "not_verified",
 }
 
 export default function EditCitizenPage({ params }: { params: Promise<{ id: string }> }) {
@@ -72,6 +73,7 @@ export default function EditCitizenPage({ params }: { params: Promise<{ id: stri
           is4PsBeneficiary: data.is_4ps_beneficiary ?? false,
           voterStatus: data.voter_status ?? "Registered",
           status: data.status ?? "Active",
+          isVerified: data.is_verified ?? "not_verified",
         })
       } catch (err: any) {
         showToast.error(err.message)
@@ -342,6 +344,27 @@ export default function EditCitizenPage({ params }: { params: Promise<{ id: stri
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">Active records are visible in reports.</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+                  Verification
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select value={form.isVerified} onValueChange={(v) => setField("isVerified", v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not_verified">Not Verified</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="verified">Verified</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
               </CardContent>
             </Card>
           </div>

@@ -32,6 +32,7 @@ export async function PUT(req: NextRequest) {
         is_4ps_beneficiary: fields.is4PsBeneficiary,
         voter_status: fields.voterStatus,
         status: fields.status,
+        is_verified: fields.isVerified,
       })
       .eq("id", id)
       .select();
