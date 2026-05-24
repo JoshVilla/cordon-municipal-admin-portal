@@ -7,12 +7,13 @@ import { Plus, EllipsisVertical, Search, X, MoreHorizontal, Eye, Edit, Trash2 } 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
-import { formatDate } from '@/lib/helpers'
+import { checkPermission, formatDate } from '@/lib/helpers'
 import { CATEGORIES, AUDIENCE } from '@/lib/constants/others'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import DropdownActions from '@/components/dropdownActions'
 import DeleteConfirmation from '@/components/deleteConfirmation'
 import { showToast } from '@/lib/utils'
+import { useSelector } from 'react-redux'
 
 const STATUS_OPTIONS = [
     { value: 'published', label: 'Published' },
@@ -21,6 +22,7 @@ const STATUS_OPTIONS = [
 
 const page = () => {
     const router = useRouter()
+    const userData = useSelector((state: any) => state.auth.user)
     const [announcements, setAnnouncements] = useState([])
     const [loading, setLoading] = useState(false)
 
@@ -101,7 +103,7 @@ const page = () => {
             icon: <Edit />,
             label: 'Edit',
             onClick: (data: any) => {
-                goToAnnouncementDetail(data.id)
+                goToEditAnnouncement(data.id)
             }
         },
         {
@@ -118,6 +120,16 @@ const page = () => {
 
     const goToAnnouncementDetail = (id: string) => {
         router.push(`/dashboard/announcement/${id}`)
+    }
+
+    const goToEditAnnouncement = (id: string) => {
+        router.push(`/dashboard/announcement/editAnnouncement/${id}`)
+    }
+
+    const goToAddAnnouncement = () => {
+        const hasPermission = checkPermission(userData?.permissions, 'PA')
+        if (!hasPermission) return
+        router.push('/dashboard/announcement/addAnnouncement')
     }
 
     const renderTableData = () => {
@@ -180,7 +192,7 @@ const page = () => {
                 {/* Top bar */}
                 <div className='flex justify-between items-center mb-4'>
                     <h1 className='text-sm font-semibold'>Announcement List</h1>
-                    <Button onClick={() => router.push('/dashboard/announcement/addAnnouncement')}>
+                    <Button onClick={goToAddAnnouncement}>
                         <Plus />
                         Add Announcement
                     </Button>

@@ -39,7 +39,7 @@ useEffect(() => {
   }
 
   ping()
-  const interval = setInterval(ping, 30 * 1000)
+  const interval = setInterval(ping, 35 * 1000)
   return () => clearInterval(interval)
 }, [userData])
 

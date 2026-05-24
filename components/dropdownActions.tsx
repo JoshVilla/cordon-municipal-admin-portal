@@ -6,14 +6,16 @@ interface ActionItem {
     icon: React.ReactNode;
     label: string;
     onClick: (data: any) => void;
+    hasPermission?: boolean;
 }
 
 interface DropdownActionsProps {
     actionItems: ActionItem[];
     data: any;
+    hasPermission?: boolean;
 }
 
-export default function DropdownActions({ actionItems, data }: DropdownActionsProps) {
+export default function DropdownActions({ actionItems, data, hasPermission }: DropdownActionsProps) {
     return (
          <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -25,7 +27,7 @@ export default function DropdownActions({ actionItems, data }: DropdownActionsPr
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {actionItems.map((item, index) => (
-                    <DropdownMenuItem key={index} onClick={() => item.onClick(data)}>
+                    <DropdownMenuItem key={index} onClick={() => item.onClick(data)} disabled={!item.hasPermission && !hasPermission}>
                       {item.icon}
                       {item.label}
                     </DropdownMenuItem>

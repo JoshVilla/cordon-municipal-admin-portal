@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { EditPermissionsModal } from './modals/editPermissionModal'
 import { EditStatusModal } from './modals/editAccountStatus'
-import { getSuspensionEndDate } from '@/lib/helpers'
+import { checkPermission, getSuspensionEndDate } from '@/lib/helpers'
 import DropdownActions from '@/components/dropdownActions'
 
 interface StaffStats {
@@ -46,9 +46,9 @@ const page = () => {
   const headers: string[] = ['Name', 'Employee ID', 'Department', 'Role', 'Status', 'Actions']
 
   const actionItems = [
-    { label: 'View Details', icon: <Eye className="h-4 w-4" />, onClick: (data: any) => goToStaffDetails(data.id) },
-    { label: 'Edit Permissions', icon: <UserCog className="h-4 w-4" />, onClick: (data: any) => setPermissionsModal({ open: true, staff: data }) },
-    { label: 'Edit Status', icon: <Shield className="h-4 w-4" />, onClick: (data: any) => setStatusModal({ open: true, staff: data }) },
+    { label: 'View Details', icon: <Eye className="h-4 w-4" />, onClick: (data: any) => goToStaffDetails(data.id), hasPermission: checkPermission(userData?.permissions, 'MSA') },
+    { label: 'Edit Permissions', icon: <UserCog className="h-4 w-4" />, onClick: (data: any) => setPermissionsModal({ open: true, staff: data }), hasPermission: checkPermission(userData?.permissions, 'MSA') },
+    { label: 'Edit Status', icon: <Shield className="h-4 w-4" />, onClick: (data: any) => setStatusModal({ open: true, staff: data }), hasPermission: checkPermission(userData?.permissions, 'MSA') },
   ]
 
   const fetchStaffs = async () => {
