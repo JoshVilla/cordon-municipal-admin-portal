@@ -94,30 +94,16 @@ const Page = () => {
         body: JSON.stringify(buildBody(f, page, limit)),
       })
       if (!res.ok) throw new Error("Failed to fetch citizens")
-      const { data, count } = await res.json()
+      const { data, count, stats: newStats } = await res.json()
       setCitizens(data)
       setTotalItems(count ?? 0)
+      setStats(newStats)
     } catch (error) {
       console.error(error)
     } finally {
       setLoading(false)
     }
   }
-
-  const fetchStats = async () => {
-    try {
-      const res = await fetch("/api/citizen/stats")
-      if (!res.ok) return
-      const data = await res.json()
-      setStats(data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  useEffect(() => {
-    fetchStats()
-  }, [])
 
   useEffect(() => {
     fetchCitizens(filters, currentPage, pageSize)
@@ -349,7 +335,6 @@ const Page = () => {
           if (result.success) {
             setDeleteModal({ open: false, citizen: null })
             showToast.success(result.message)
-            fetchStats()
             fetchCitizens(filters, currentPage, pageSize)
           } else {
             showToast.error(result.message)

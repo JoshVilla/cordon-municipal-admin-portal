@@ -41,14 +41,35 @@ export async function POST(req: NextRequest) {
     if (is_4ps_beneficiary !== undefined) query = query.eq("is_4ps_beneficiary", is_4ps_beneficiary)
     if (voter_status) query = query.eq("voter_status", voter_status)
 
-    const { data, error, count } = await query
-      .order("last_name", { ascending: true })
-      .order("first_name", { ascending: true })
-      .range(from, to);
+    const [listResult, statsResult] = await Promise.all([
+      query
+        .order("last_name", { ascending: true })
+        .order("first_name", { ascending: true })
+        .range(from, to),
+      Promise.all([
+        supabase.from("citizens").select("*", { count: "exact", head: true }),
+        supabase.from("citizens").select("*", { count: "exact", head: true }).eq("is_pwd", true),
+        supabase.from("citizens").select("*", { count: "exact", head: true }).eq("is_senior_citizen", true),
+        supabase.from("citizens").select("*", { count: "exact", head: true }).eq("is_4ps_beneficiary", true),
+        supabase.from("citizens").select("*", { count: "exact", head: true }).eq("voter_status", "Registered"),
+      ])
+    ]);
 
-    if (error) throw error;
+    if (listResult.error) throw listResult.error;
 
-    return NextResponse.json({ data, count });
+    const [total, pwd, senior, beneficiary, registered] = statsResult;
+
+    return NextResponse.json({
+      data: listResult.data,
+      count: listResult.count,
+      stats: {
+        total: total.count ?? 0,
+        pwd: pwd.count ?? 0,
+        senior: senior.count ?? 0,
+        beneficiary: beneficiary.count ?? 0,
+        registered_voters: registered.count ?? 0,
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
