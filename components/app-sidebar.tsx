@@ -43,6 +43,11 @@ const data = {
       url: "/dashboard/requests",
       icon: FileText,
     },
+      {
+      title: "Verification Requests",
+      url: "/dashboard/verification-request",
+      icon: FileText,
+    },
     {
       title: "Complaints",
       url: "/dashboard/complaints",
