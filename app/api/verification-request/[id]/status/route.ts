@@ -20,10 +20,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .from('verification_requests')
       .update({ status })
       .eq('id', id)
-      .select('id, status')
+      .select('id, status, user_id')
       .single()
 
     if (error) throw error
+
+    const appUserStatus: Record<string, string> = {
+      pending:      'pending',
+      verified:     'approved',
+      rejected:     'rejected',
+      not_verified: 'not_verified',
+    }
+
+    const { error: userError } = await supabase
+      .from('app_users')
+      .update({ verification_status: appUserStatus[status] })
+      .eq('id', data.user_id)
+
+    if (userError) throw userError
 
     return NextResponse.json({ message: 'Status updated successfully.', data })
   } catch (error: any) {

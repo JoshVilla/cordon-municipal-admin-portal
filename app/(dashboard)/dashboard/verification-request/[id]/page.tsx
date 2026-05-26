@@ -11,7 +11,6 @@ interface VerificationRequest {
   id: string
   user_id: string
   name: string
-  suffix: string | null
   email: string
   phone_number: string | null
   barangay: string
@@ -23,6 +22,23 @@ interface VerificationRequest {
   id_back_url?: string
   status: string
   created_at: string
+}
+
+interface MatchScores {
+  name: number
+  barangay: number
+  email: number
+  phone: number
+  overall: number
+}
+
+interface CitizenMatch {
+  citizen_id: string
+  citizen_name: string
+  barangay: string
+  email: string | null
+  contact_number: string | null
+  scores: MatchScores
 }
 
 const statusColor = (status: string) => {
@@ -58,6 +74,183 @@ const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
     </p>
   </div>
 )
+
+function confidenceLevel(score: number): { label: string; color: string; bar: string } {
+  if (score >= 75) return { label: 'High', color: 'text-green-600', bar: 'bg-green-500' }
+  if (score >= 45) return { label: 'Moderate', color: 'text-yellow-600', bar: 'bg-yellow-500' }
+  return { label: 'Low', color: 'text-red-500', bar: 'bg-red-500' }
+}
+
+function ScoreBar({ score, barColor }: { score: number; barColor: string }) {
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+      <span className="text-xs tabular-nums w-8 text-right">{score}%</span>
+    </div>
+  )
+}
+
+function FieldMatchRow({
+  label,
+  requestValue,
+  citizenValue,
+  score,
+}: {
+  label: string
+  requestValue: string | null
+  citizenValue: string | null
+  score: number
+}) {
+  const hasData = !!requestValue && !!citizenValue
+  const barColor = score === 100 ? 'bg-green-500' : score > 0 ? 'bg-yellow-500' : 'bg-red-400'
+
+  return (
+    <div className="rounded-lg border p-3 space-y-2">
+      <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Submitted</p>
+          <p className="font-medium truncate">{requestValue ?? <span className="italic text-muted-foreground">—</span>}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Resident Record</p>
+          <p className="font-medium truncate">{citizenValue ?? <span className="italic text-muted-foreground">—</span>}</p>
+        </div>
+      </div>
+      {!hasData ? (
+        <span className="text-xs text-muted-foreground">No data to compare</span>
+      ) : (
+        <ScoreBar score={score} barColor={barColor} />
+      )}
+    </div>
+  )
+}
+
+function MatchAnalysisCard({ requestId, request }: { requestId: string; request: VerificationRequest }) {
+  const [matches, setMatches] = useState<CitizenMatch[] | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/verification-request/${requestId}/match`)
+      .then(r => r.json())
+      .then(d => setMatches(d.matches ?? []))
+      .catch(() => setMatches([]))
+      .finally(() => setLoading(false))
+  }, [requestId])
+
+  const best = matches?.[0]
+  const conf = best ? confidenceLevel(best.scores.overall) : null
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Resident Match Analysis</CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Compares submitted info against the resident database to estimate verification confidence.
+        </p>
+      </CardHeader>
+      <Separator />
+      <CardContent className="pt-6 space-y-5">
+        {loading && (
+          <p className="text-sm text-muted-foreground">Analyzing matches...</p>
+        )}
+
+        {!loading && (!best || best.scores.overall === 0) && (
+          <p className="text-sm text-muted-foreground italic">No matching resident found in the database.</p>
+        )}
+
+        {!loading && best && best.scores.overall > 0 && (
+          <>
+            {/* Overall score */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Best Match: {best.citizen_name}</p>
+                  <p className="text-xs text-muted-foreground">{best.barangay}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-2xl font-bold tabular-nums ${conf!.color}`}>
+                    {best.scores.overall}%
+                  </p>
+                  <p className={`text-xs font-medium ${conf!.color}`}>{conf!.label} Confidence</p>
+                </div>
+              </div>
+              <div className="h-3 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${conf!.bar}`}
+                  style={{ width: `${best.scores.overall}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Field-by-field breakdown */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Field Breakdown
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <FieldMatchRow
+                  label="Name"
+                  requestValue={request.name}
+                  citizenValue={best.citizen_name}
+                  score={best.scores.name}
+                />
+                <FieldMatchRow
+                  label="Barangay"
+                  requestValue={request.barangay}
+                  citizenValue={best.barangay}
+                  score={best.scores.barangay}
+                />
+                <FieldMatchRow
+                  label="Email"
+                  requestValue={request.email}
+                  citizenValue={best.email}
+                  score={best.scores.email}
+                />
+                <FieldMatchRow
+                  label="Phone"
+                  requestValue={request.phone_number}
+                  citizenValue={best.contact_number}
+                  score={best.scores.phone}
+                />
+              </div>
+            </div>
+
+            {/* Other potential matches */}
+            {matches!.length > 1 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Other Potential Matches
+                </p>
+                <div className="space-y-2">
+                  {matches!.slice(1).map(m => {
+                    const c = confidenceLevel(m.scores.overall)
+                    return (
+                      <div key={m.citizen_id} className="flex items-center justify-between text-sm">
+                        <div>
+                          <span className="font-medium">{m.citizen_name}</span>
+                          <span className="text-muted-foreground ml-2 text-xs">{m.barangay}</span>
+                        </div>
+                        <span className={`text-xs font-semibold tabular-nums ${c.color}`}>
+                          {m.scores.overall}%
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function VerificationRequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -109,6 +302,10 @@ export default function VerificationRequestDetailPage({ params }: { params: Prom
         <Badge className={statusColor(request.status)}>{statusLabel(request.status)}</Badge>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        {/* Left column */}
+        <div className="space-y-4">
+
       {/* Personal Information */}
       <Card>
         <CardHeader>
@@ -118,7 +315,6 @@ export default function VerificationRequestDetailPage({ params }: { params: Prom
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             <Field label="Full Name"    value={request.name} />
-            <Field label="Suffix"       value={request.suffix} />
             <Field label="Email"        value={request.email} />
             <Field label="Phone Number" value={request.phone_number} />
             <Field label="Barangay"     value={request.barangay} />
@@ -176,6 +372,13 @@ export default function VerificationRequestDetailPage({ params }: { params: Prom
           </div>
         </CardContent>
       </Card>
+
+        </div>{/* end left column */}
+
+        {/* Right column — Match Analysis */}
+        <MatchAnalysisCard requestId={id} request={request} />
+
+      </div>{/* end 2-col grid */}
     </div>
   )
 }

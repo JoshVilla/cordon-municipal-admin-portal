@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
       .insert({
         auth_id: authData.user.id,
         email,
+        suffix,
         first_name: firstName,
         last_name: lastName,
         middle_name: middleName ?? null,
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
         id_file_path: null,
         verification_status: 'not_verified',
       })
-      .select('id, email, first_name, middle_name, last_name, phone_number, barangay, verification_status, created_at')
+      .select('id, email, first_name, suffix, middle_name, last_name, phone_number, barangay, verification_status, created_at')
       .single()
 
     if (insertError) {
