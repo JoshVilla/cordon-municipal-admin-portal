@@ -25,7 +25,7 @@ interface Citizen {
   is_4ps_beneficiary: boolean
   voter_status: string
   status: string
-  is_verified: string
+  verification_status: string
 }
 
 const statusColor = (status: string) => {
@@ -119,8 +119,8 @@ export default function CitizenDetailPage({ params }: { params: Promise<{ id: st
 
       <div className="flex items-center gap-2">
         <Badge className={statusColor(citizen.status)}>{citizen.status}</Badge>
-        <Badge className={citizen.is_verified === 'verified' ? 'bg-blue-500' : citizen.is_verified === 'pending' ? 'bg-yellow-500' : citizen.is_verified === 'rejected' ? 'bg-red-500' : 'bg-gray-400'}>
-          {citizen.is_verified === 'verified' ? 'Verified' : citizen.is_verified === 'pending' ? 'Pending' : citizen.is_verified === 'rejected' ? 'Rejected' : 'Not Verified'}
+        <Badge className={citizen.verification_status === 'verified' ? 'bg-blue-500' : citizen.verification_status === 'pending' ? 'bg-yellow-500' : citizen.verification_status === 'rejected' ? 'bg-red-500' : 'bg-gray-400'}>
+          {citizen.verification_status === 'verified' ? 'Verified' : citizen.verification_status === 'pending' ? 'Pending' : citizen.verification_status === 'rejected' ? 'Rejected' : 'Not Verified'}
         </Badge>
         {citizen.is_senior_citizen && <Badge variant="outline">Senior Citizen</Badge>}
         {citizen.is_pwd && <Badge variant="outline">PWD</Badge>}
@@ -219,8 +219,8 @@ export default function CitizenDetailPage({ params }: { params: Promise<{ id: st
               <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Verification</CardTitle>
             </CardHeader>
             <CardContent>
-              <Badge className={citizen.is_verified === 'verified' ? 'bg-blue-500' : citizen.is_verified === 'pending' ? 'bg-yellow-500' : citizen.is_verified === 'rejected' ? 'bg-red-500' : 'bg-gray-400'}>
-                {citizen.is_verified === 'verified' ? 'Verified' : citizen.is_verified === 'pending' ? 'Pending' : citizen.is_verified === 'rejected' ? 'Rejected' : 'Not Verified'}
+              <Badge className={citizen.verification_status === 'verified' ? 'bg-blue-500' : citizen.verification_status === 'pending' ? 'bg-yellow-500' : citizen.verification_status === 'rejected' ? 'bg-red-500' : 'bg-gray-400'}>
+                {citizen.verification_status === 'verified' ? 'Verified' : citizen.verification_status === 'pending' ? 'Pending' : citizen.verification_status === 'rejected' ? 'Rejected' : 'Not Verified'}
               </Badge>
             </CardContent>
           </Card>

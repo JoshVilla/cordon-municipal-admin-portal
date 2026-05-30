@@ -43,20 +43,19 @@ interface CitizenMatch {
 
 const statusColor = (status: string) => {
   switch (status) {
-    case 'pending':     return 'bg-yellow-500'
-    case 'verified':    return 'bg-blue-500'
-    case 'rejected':    return 'bg-red-500'
-    default:            return 'bg-gray-400'
+    case 'pending':   return 'bg-yellow-500'
+    case 'approved':  return 'bg-blue-500'
+    case 'rejected':  return 'bg-red-500'
+    default:          return 'bg-gray-400'
   }
 }
 
 const statusLabel = (status: string) => {
   switch (status) {
-    case 'pending':      return 'Pending'
-    case 'verified':     return 'Verified'
-    case 'rejected':     return 'Rejected'
-    case 'not_verified': return 'Not Verified'
-    default:             return status
+    case 'pending':  return 'Pending'
+    case 'approved': return 'Approved'
+    case 'rejected': return 'Rejected'
+    default:         return status
   }
 }
 

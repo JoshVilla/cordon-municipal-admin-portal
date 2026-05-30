@@ -24,7 +24,7 @@ const StatCard = ({ title, value, icon: Icon, color = 'blue' }: StatCardProps) =
       </div>
       <div>
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{title}</p>
-        <p className="text-2xl font-bold text-foreground leading-tight">{value.toLocaleString()}</p>
+        <p className="text-2xl font-bold text-foreground leading-tight">{(value ?? 0).toLocaleString()}</p>
       </div>
     </div>
   )

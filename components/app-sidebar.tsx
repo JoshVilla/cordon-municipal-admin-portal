@@ -23,6 +23,7 @@ import {
   BarChart2,
   Settings,
   Building2,
+  Layers,
 } from "lucide-react"
 import { ThemeToggle } from "./ThemeToggle"
 
@@ -47,6 +48,11 @@ const data = {
       title: "Verification Requests",
       url: "/dashboard/verification-request",
       icon: FileText,
+    },
+    {
+      title: "Form Builder",
+      url: "/dashboard/document-forms",
+      icon: Layers,
     },
     {
       title: "Complaints",

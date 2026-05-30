@@ -29,20 +29,19 @@ const defaultFilters = { name: '', barangay: 'all', status: 'all' }
 
 const statusColor = (status: string) => {
   switch (status) {
-    case 'pending':     return 'bg-yellow-500'
-    case 'verified':    return 'bg-blue-500'
-    case 'rejected':    return 'bg-red-500'
-    default:            return 'bg-gray-400'
+    case 'pending':   return 'bg-yellow-500'
+    case 'approved':  return 'bg-blue-500'
+    case 'rejected':  return 'bg-red-500'
+    default:          return 'bg-gray-400'
   }
 }
 
 const statusLabel = (status: string) => {
   switch (status) {
-    case 'pending':      return 'Pending'
-    case 'verified':     return 'Verified'
-    case 'rejected':     return 'Rejected'
-    case 'not_verified': return 'Not Verified'
-    default:             return status
+    case 'pending':  return 'Pending'
+    case 'approved': return 'Approved'
+    case 'rejected': return 'Rejected'
+    default:         return status
   }
 }
 
@@ -59,7 +58,7 @@ const Page = () => {
   const [pageSize, setPageSize] = useState(10)
   const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState(defaultFilters)
-  const [stats, setStats] = useState({ total: 0, pending: 0, verified: 0, rejected: 0 })
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
   const [editModal, setEditModal] = useState({ open: false, request: null as any, status: '' })
   const [editLoading, setEditLoading] = useState(false)
 
@@ -160,7 +159,7 @@ const Page = () => {
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-4'>
         <StatCard title="Total Requests" value={stats.total}    icon={ClipboardList}  color="blue"   />
         <StatCard title="Pending"        value={stats.pending}  icon={Clock}          color="yellow" />
-        <StatCard title="Verified"       value={stats.verified} icon={CheckCircle2}   color="green"  />
+        <StatCard title="Approved"       value={stats.approved} icon={CheckCircle2}   color="green"  />
         <StatCard title="Rejected"       value={stats.rejected} icon={XCircle}        color="red"    />
       </div>
 
@@ -200,9 +199,8 @@ const Page = () => {
             <SelectContent>
               <SelectItem value='all'>All Status</SelectItem>
               <SelectItem value='pending'>Pending</SelectItem>
-              <SelectItem value='verified'>Verified</SelectItem>
+              <SelectItem value='approved'>Approved</SelectItem>
               <SelectItem value='rejected'>Rejected</SelectItem>
-              <SelectItem value='not_verified'>Not Verified</SelectItem>
             </SelectContent>
           </Select>
 
@@ -285,9 +283,8 @@ const Page = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='pending'>Pending</SelectItem>
-                <SelectItem value='verified'>Verified</SelectItem>
+                <SelectItem value='approved'>Approved</SelectItem>
                 <SelectItem value='rejected'>Rejected</SelectItem>
-                <SelectItem value='not_verified'>Not Verified</SelectItem>
               </SelectContent>
             </Select>
           </div>

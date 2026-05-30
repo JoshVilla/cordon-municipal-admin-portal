@@ -26,14 +26,14 @@ export async function POST(req: NextRequest) {
       Promise.all([
         supabase.from('verification_requests').select('*', { count: 'exact', head: true }),
         supabase.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'verified'),
+        supabase.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
         supabase.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'rejected'),
       ])
     ])
 
     if (listResult.error) throw listResult.error
 
-    const [total, pending, verified, rejected] = statsResult
+    const [total, pending, approved, rejected] = statsResult
 
     return NextResponse.json({
       data: listResult.data,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       stats: {
         total: total.count ?? 0,
         pending: pending.count ?? 0,
-        verified: verified.count ?? 0,
+        approved: approved.count ?? 0,
         rejected: rejected.count ?? 0,
       }
     })

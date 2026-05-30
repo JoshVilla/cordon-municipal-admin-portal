@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     const { data: user, error: userError } = await supabaseAdmin
       .from('app_users')
-      .select('id, email, first_name, middle_name, last_name, phone_number, barangay, verification_status, created_at')
+      .select('id, email, first_name, middle_name, last_name, phone_number, barangay, verification_status, created_at, use_info_from_portal')
       .eq('auth_id', authData.user.id)
       .maybeSingle()
 

@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params
     const { status } = await req.json()
 
-    const validStatuses = ['pending', 'verified', 'rejected', 'not_verified']
+    const validStatuses = ['pending', 'approved', 'rejected']
     if (!status || !validStatuses.includes(status)) {
       return NextResponse.json({ message: 'Invalid status.' }, { status: 400 })
     }
@@ -26,15 +26,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (error) throw error
 
     const appUserStatus: Record<string, string> = {
-      pending:      'pending',
-      verified:     'approved',
-      rejected:     'rejected',
-      not_verified: 'not_verified',
+      pending:  'pending',
+      approved: 'verified',
+      rejected: 'rejected',
     }
 
     const { error: userError } = await supabase
       .from('app_users')
-      .update({ verification_status: appUserStatus[status] })
+      .update({
+        verification_status:  appUserStatus[status],
+        use_info_from_portal: status === 'approved' ? 'waiting' : 'no',
+      })
       .eq('id', data.user_id)
 
     if (userError) throw userError
